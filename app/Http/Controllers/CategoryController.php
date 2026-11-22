@@ -33,7 +33,16 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        // Small Fix: check before delete to avoid foreign key failure
+        if ($category->books()->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete category that has books'
+            ], 409);
+        }
+
         $category->delete();
-        return response()->json(['message' => 'Category deleted successfully']);
+        return response()->json([
+            'message' => 'Category deleted successfully'
+        ]);
     }
 }

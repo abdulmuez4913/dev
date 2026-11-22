@@ -15,11 +15,12 @@ class BookResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'       => $this->id,
-            'name'     => $this->name,
-            'ISBN'     => $this->ISBN,
-            'author'   => $this->author,
-            'category' => CategoryResource::make($this->whenLoaded('category')),
+            'id'           => $this->id,
+            'name'         => $this->name,
+            'ISBN'         => $this->ISBN,
+            'author'       => $this->author,
+            'is_available' => !$this->borrowings()->wherePivot('is_returned', false)->exists(),
+            'category'     => CategoryResource::make($this->whenLoaded('category')),
         ];
     }
 }

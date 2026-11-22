@@ -10,10 +10,22 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    public function index()
+    /**
+     * List and search books (Task 8: support ?search= and ?category_id=).
+     */
+    public function index(Request $request)
     {
-        $books = Book::all();
-        return BookResource::collection($books);
+        $query = Book::query();
+
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        return BookResource::collection($query->get());
     }
 
     public function store(StoreBookRequest $request)
@@ -35,6 +47,13 @@ class BookController extends Controller
 
     public function destroy(Book $book)
     {
+        // Small Fix: check before delete to avoid foreign key failure
+        if ($book->borrowings()->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete book that was borrowed'
+            ], 409);
+        }
+
         $book->delete();
         return response()->noContent();
     }
